@@ -1,0 +1,23 @@
+#!/bin/sh
+
+branch="$(git rev-parse --abbrev-ref HEAD)";
+
+if [ "$branch" = "main" ]; then
+echo "You can't commit directly to main branch"
+exit 1
+fi
+
+if [ "$branch" = "dev" ]; then
+echo "You can't commit directly to dev branch"
+exit 1
+fi
+
+commit_regex='/^(?<type>feat|(bug)?fix|docs|style|refactor|test|chore){1}(?<scope>\(\w{0,15}\))?:\s(?<summary>[a-zA-Z0-9_ ]{1,70}){1}(?<body>\n{2}(?<body2>[a-zA-Z0-9 ]{1,80}\n?)+)?(?<footer>((?<!\n)\n{2}|\n)(?<ref>(Refs:|Closes) #[0-9]{4}\n?)*)?(?<breaking>BREAKING CHANGE: [a-zA-Z0-9!@#$%^&*()\-=+ ]{1,63}(\n[a-zA-Z0-9!@#$%^&*()\-=+ ]{1,80})*)$/gm';
+error_msg="Aborting commit. Your commit message format is invalid, please check the references."
+commit_message="$1";
+
+
+if ! grep -iqE "$commit_regex" <<<"${commit_message}"; then
+echo "$error_msg" >&2
+exit 1
+fi
